@@ -1,0 +1,15 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Environment variables (Crucial!)
+.env
+
+# Data and logs
+data/*.csv
+data/*.json
+*.log
+
+# Virtual environments
+venv/
+.venv/
