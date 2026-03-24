@@ -1,0 +1,7 @@
+README.md
+setup.py
+stock_ticker_sourcer.egg-info/PKG-INFO
+stock_ticker_sourcer.egg-info/SOURCES.txt
+stock_ticker_sourcer.egg-info/dependency_links.txt
+stock_ticker_sourcer.egg-info/requires.txt
+stock_ticker_sourcer.egg-info/top_level.txt
