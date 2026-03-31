@@ -1,0 +1,47 @@
+name: Deploy to Azure Container Apps
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    needs: []  # runs after CI passes (required via branch protection)
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push API image
+        run: |
+          docker build -f Dockerfile.api \
+            -t ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:${{ github.sha }} \
+            -t ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:latest .
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:${{ github.sha }}
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:latest
+
+      - name: Deploy API to Azure Container Apps
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          resourceGroup: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          containerAppName: stocksense-api
+          imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:${{ github.sha }}
+
+      - name: Update sentiment scoring Container App Job
+        run: |
+          az containerapp job update \
+            --name stocksense-scorer \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --image ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:${{ github.sha }}

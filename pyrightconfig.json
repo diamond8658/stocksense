@@ -1,0 +1,10 @@
+{
+    "executionEnvironments": [
+        {"root": "."},
+        {"root": "src"},
+        {"root": "dags"},
+        {"root": "tests"}
+    ],
+    "venvPath": ".",
+    "venv": "venv"
+}
