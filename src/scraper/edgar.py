@@ -10,9 +10,9 @@ from __future__ import annotations
 import logging
 import re
 import time
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import date
-from typing import Iterator
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -46,10 +46,12 @@ class FilingRecord:
 def _make_session(ua_index: int = 0) -> requests.Session:
     """Build a requests session with retry logic and SEC-compliant headers."""
     session = requests.Session()
-    session.headers.update({
-        "User-Agent": _USER_AGENTS[ua_index % len(_USER_AGENTS)],
-        "Accept-Encoding": "gzip, deflate",
-    })
+    session.headers.update(
+        {
+            "User-Agent": _USER_AGENTS[ua_index % len(_USER_AGENTS)],
+            "Accept-Encoding": "gzip, deflate",
+        }
+    )
     retry = Retry(
         total=5,
         backoff_factor=0.5,
@@ -102,22 +104,21 @@ def _get_filing_urls(
     cik_int = int(cik)
 
     results = []
-    for form, acc, filed, period in zip(forms, accessions, filed_dates, periods):
+    for form, acc, filed, period in zip(forms, accessions, filed_dates, periods, strict=False):
         if form == form_type:
             acc_clean = acc.replace("-", "")
             # Correct EDGAR archive URL: uses integer CIK (no leading zeros)
-            filing_url = (
-                f"https://www.sec.gov/Archives/edgar/data/{cik_int}"
-                f"/{acc_clean}/{acc}.txt"
+            filing_url = f"https://www.sec.gov/Archives/edgar/data/{cik_int}/{acc_clean}/{acc}.txt"
+            results.append(
+                {
+                    "form_type": form,
+                    "accession_number": acc,
+                    "filed_at": filed,
+                    "period_of_report": period or None,
+                    "company_name": company_name,
+                    "filing_url": filing_url,
+                }
             )
-            results.append({
-                "form_type": form,
-                "accession_number": acc,
-                "filed_at": filed,
-                "period_of_report": period or None,
-                "company_name": company_name,
-                "filing_url": filing_url,
-            })
             if len(results) >= limit:
                 break
 

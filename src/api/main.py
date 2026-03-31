@@ -7,7 +7,6 @@ Exposes processed SEC filing data and FinBERT sentiment scores.
 from __future__ import annotations
 
 from datetime import date
-from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
@@ -26,6 +25,7 @@ app = FastAPI(
 # Response models
 # ---------------------------------------------------------------------------
 
+
 class FilingSummary(BaseModel):
     id: int
     ticker: str
@@ -33,10 +33,10 @@ class FilingSummary(BaseModel):
     filed_at: date
     company_name: str
     filing_url: str
-    sentiment_label: Optional[str] = None
-    sentiment_positive: Optional[float] = None
-    sentiment_negative: Optional[float] = None
-    sentiment_neutral: Optional[float] = None
+    sentiment_label: str | None = None
+    sentiment_positive: float | None = None
+    sentiment_negative: float | None = None
+    sentiment_neutral: float | None = None
 
 
 class SentimentTrend(BaseModel):
@@ -58,6 +58,7 @@ class HealthResponse(BaseModel):
 # Endpoints
 # ---------------------------------------------------------------------------
 
+
 @app.get("/health", response_model=HealthResponse, tags=["ops"])
 def health():
     """Liveness check — verifies DB connectivity."""
@@ -66,13 +67,13 @@ def health():
             session.execute(text("SELECT 1"))
         return {"status": "ok", "db": "connected"}
     except Exception as exc:
-        raise HTTPException(status_code=503, detail=f"DB unavailable: {exc}")
+        raise HTTPException(status_code=503, detail=f"DB unavailable: {exc}") from exc
 
 
 @app.get("/filings", response_model=list[FilingSummary], tags=["filings"])
 def list_filings(
-    ticker: Optional[str] = Query(None, description="Filter by ticker symbol"),
-    form_type: Optional[str] = Query(None, description="Filter by form type (10-K, 10-Q, 8-K)"),
+    ticker: str | None = Query(None, description="Filter by ticker symbol"),
+    form_type: str | None = Query(None, description="Filter by form type (10-K, 10-Q, 8-K)"),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
 ):
@@ -203,18 +204,17 @@ def sentiment_summary(
         ).fetchone()
 
     if not row or row.total_filings == 0:
-        raise HTTPException(
-            status_code=404, detail=f"No scored filings found for {ticker}"
-        )
+        raise HTTPException(status_code=404, detail=f"No scored filings found for {ticker}")
 
     return dict(row._mapping)
+
 
 @app.post("/score/trigger", tags=["sentiment"])
 async def trigger_scoring(batch_size: int = 50):
     """Trigger FinBERT scoring on unscored filings."""
-    import asyncio
-    from src.sentiment.finbert import score_filing, MODEL_NAME
     from sqlalchemy import text
+
+    from src.sentiment.finbert import MODEL_NAME, score_filing
 
     with get_session() as session:
         rows = session.execute(
@@ -239,11 +239,16 @@ async def trigger_scoring(batch_size: int = 50):
                         VALUES (:filing_id, :positive, :negative, :neutral, :label, :model)
                         ON CONFLICT (filing_id, model) DO NOTHING
                     """),
-                    {"filing_id": filing_id, "positive": result.positive,
-                     "negative": result.negative, "neutral": result.neutral,
-                     "label": result.label, "model": result.model},
+                    {
+                        "filing_id": filing_id,
+                        "positive": result.positive,
+                        "negative": result.negative,
+                        "neutral": result.neutral,
+                        "label": result.label,
+                        "model": result.model,
+                    },
                 )
             scored += 1
-        except Exception as exc:
+        except Exception:
             failed += 1
     return {"scored": scored, "failed": failed}

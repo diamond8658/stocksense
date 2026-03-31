@@ -6,8 +6,8 @@ Uses SQLAlchemy with a connection pool sized for Airflow task concurrency.
 from __future__ import annotations
 
 import os
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Generator
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine

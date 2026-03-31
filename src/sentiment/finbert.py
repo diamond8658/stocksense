@@ -9,9 +9,10 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import Any
 
 import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
+from transformers import AutoTokenizer, pipeline
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ def _chunk_text(text: str, tokenizer, chunk_size: int = MAX_CHUNK_TOKENS) -> lis
     stride = chunk_size - CHUNK_OVERLAP
     chunks = []
     for start in range(0, len(tokens), stride):
-        chunk_tokens = tokens[start: start + chunk_size]
+        chunk_tokens = tokens[start : start + chunk_size]
         chunk_text = tokenizer.decode(chunk_tokens, skip_special_tokens=True)
         chunks.append(chunk_text)
         if start + chunk_size >= len(tokens):

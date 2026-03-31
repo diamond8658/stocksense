@@ -11,7 +11,6 @@ Triggered after ingest_filings_dag via ExternalTaskSensor.
 from __future__ import annotations
 
 import logging
-import os
 from datetime import datetime, timedelta
 
 from airflow import DAG
@@ -33,6 +32,7 @@ default_args = {
 
 def _score_unscored_filings(**context) -> None:
     import requests
+
     resp = requests.post(
         "http://api:8000/score/trigger",
         params={"batch_size": 50},
@@ -52,7 +52,6 @@ with DAG(
     catchup=False,
     tags=["stocksense", "sentiment"],
 ) as dag:
-
     wait_for_ingest = ExternalTaskSensor(
         task_id="wait_for_ingest",
         external_dag_id="ingest_filings",

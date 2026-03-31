@@ -19,8 +19,16 @@ logger = logging.getLogger(__name__)
 
 # Tickers to track — extend this list as needed
 WATCH_LIST = [
-    "AAPL", "MSFT", "GOOGL", "AMZN", "META",
-    "NVDA", "JPM", "GS", "BAC", "WFC",
+    "AAPL",
+    "MSFT",
+    "GOOGL",
+    "AMZN",
+    "META",
+    "NVDA",
+    "JPM",
+    "GS",
+    "BAC",
+    "WFC",
 ]
 
 FORM_TYPES = ["10-K", "10-Q", "8-K"]
@@ -41,11 +49,13 @@ def _ingest_filings(form_type: str, **context) -> None:
     Skips filings already present (idempotent via accession_number UNIQUE).
     """
     import sys
+
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-    from src.scraper.edgar import scrape_filings
-    from src.pipeline.db import get_session
     from sqlalchemy import text
+
+    from src.pipeline.db import get_session
+    from src.scraper.edgar import scrape_filings
 
     inserted = 0
     skipped = 0
@@ -84,9 +94,7 @@ def _ingest_filings(form_type: str, **context) -> None:
                 logger.warning("Failed to insert %s: %s", record.accession_number, exc)
                 skipped += 1
 
-    logger.info(
-        "form_type=%s: inserted=%d skipped=%d", form_type, inserted, skipped
-    )
+    logger.info("form_type=%s: inserted=%d skipped=%d", form_type, inserted, skipped)
 
 
 with DAG(
@@ -98,7 +106,6 @@ with DAG(
     catchup=False,
     tags=["stocksense", "ingest"],
 ) as dag:
-
     for form in FORM_TYPES:
         PythonOperator(
             task_id=f"ingest_{form.replace('-', '_').lower()}",
