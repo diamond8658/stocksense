@@ -41,7 +41,9 @@ jobs:
         run: pip install -r requirements.txt -r requirements-dev.txt
 
       - name: Run migrations
-        run: psql $DATABASE_URL -f migrations/001_init.sql
+        env:
+          PGPASSWORD: stocksense
+        run: psql -h localhost -U stocksense -d stocksense -f migrations/001_init.sql
 
       - name: Lint (ruff)
         run: ruff check src/ dags/ tests/
