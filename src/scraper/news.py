@@ -1,6 +1,6 @@
 import time
 from datetime import datetime, timedelta
-from typing import Any, Optional
+from typing import Any
 
 import finnhub
 import pandas as pd
@@ -18,7 +18,7 @@ class StockSourcer:
         self.finnhub_client = finnhub.Client(api_key=api_key)
 
         # Load spaCy model for granular entity extraction
-        self.nlp: Optional[Language] = None
+        self.nlp: Language | None = None
         try:
             self.nlp = spacy.load("en_core_web_sm")
         except OSError:
