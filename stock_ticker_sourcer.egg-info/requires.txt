@@ -1,4 +1,0 @@
-yfinance
-finnhub-python
-pandas>=2.2.3
-python-dotenv

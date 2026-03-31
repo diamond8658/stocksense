@@ -1,15 +1,25 @@
-# Python bytecode
+# Python
 __pycache__/
 *.py[cod]
+*.pyc
+*.egg-info/
 
-# Environment variables (Crucial!)
+# Environment variables
 .env
 
 # Data and logs
 data/*.csv
 data/*.json
 *.log
+logs/
 
 # Virtual environments
 venv/
 .venv/
+
+# Tools
+.mypy_cache/
+.ruff_cache/
+
+# Docker
+postgres_data/
