@@ -26,10 +26,10 @@ jobs:
 
       - name: Build and push API image
         run: |
-          docker build -f Dockerfile.api \
+          docker build -f Dockerfile \
             -t ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:${{ github.sha }} \
             -t ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:latest .
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:${{ github.sha }}
+                docker push ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:${{ github.sha }}
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:latest
 
       - name: Deploy API to Azure Container Apps
