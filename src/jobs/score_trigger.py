@@ -1,6 +1,7 @@
 # src/jobs/score_trigger.py
-import requests
 import sys
+
+import requests
 
 resp = requests.post(
     "https://stocksense-api.delightfultree-af000461.centralus.azurecontainerapps.io/score/trigger",
