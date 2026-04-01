@@ -38,9 +38,9 @@ jobs:
           containerAppName: stocksense-api
           imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:${{ github.sha }}
 
-      # - name: Update sentiment scoring Container App Job
-      #   run: |
-      #     az containerapp job update \
-      #       --name stocksense-scorer \
-      #       --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-      #       --image ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:${{ github.sha }}
+      - name: Update sentiment scoring Container App Job
+        run: |
+          az containerapp job update \
+            --name stocksense-scorer \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --image ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:${{ github.sha }}
