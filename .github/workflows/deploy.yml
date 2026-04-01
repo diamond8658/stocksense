@@ -1,12 +1,15 @@
 name: Deploy to Azure Container Apps
 
 on:
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types: [completed]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    needs: []  # runs after CI passes (required via branch protection)
+    if: github.event.workflow_run.conclusion == 'success'
 
     steps:
       - uses: actions/checkout@v4
@@ -28,7 +31,7 @@ jobs:
           docker build -f Dockerfile \
             -t ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:${{ github.sha }} \
             -t ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:latest .
-                docker push ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:${{ github.sha }}
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:${{ github.sha }}
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/stocksense-api:latest
 
       - name: Deploy API to Azure Container Apps
